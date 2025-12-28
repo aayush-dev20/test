@@ -23,9 +23,28 @@
                 <span class="logo-text">EduTrack Pro</span>
             </a>
             
+            <nav class="nav-menu" id="navMenu" style="display: none;">
+                <a href="#" class="nav-link" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="#" class="nav-link" data-page="attendance">
+                    <i class="fas fa-calendar-check"></i> Attendance
+                </a>
+                <a href="#" class="nav-link" data-page="marks">
+                    <i class="fas fa-chart-bar"></i> Marks
+                </a>
+                <a href="#" class="nav-link" data-page="students" id="studentsLink" style="display: none;">
+                    <i class="fas fa-users"></i> Students
+                </a>
+            </nav>
+            
             <div class="nav-controls">
-                <button class="btn btn-secondary" id="themeToggle" style="padding: 0.5rem;">
+                <button class="btn btn-secondary" id="themeToggle" style="padding: 0.5rem;" title="Toggle theme">
                     <i class="fas fa-moon"></i>
+                </button>
+                
+                <button class="btn btn-secondary" id="voiceToggle" style="padding: 0.5rem; margin-left: 0.5rem;" title="Voice commands">
+                    <i class="fas fa-microphone"></i>
                 </button>
                 
                 <div class="user-info" id="userInfo" style="display: none;">
@@ -56,10 +75,10 @@
             </div>
             
             <div class="footer-links">
-                <a href="#"><i class="fas fa-info-circle"></i> About</a>
-                <a href="#"><i class="fas fa-envelope"></i> Contact</a>
-                <a href="#"><i class="fas fa-shield-alt"></i> Privacy</a>
-                <a href="#"><i class="fas fa-file-alt"></i> Terms</a>
+                <a href="#" id="aboutLink"><i class="fas fa-info-circle"></i> About</a>
+                <a href="#" id="contactLink"><i class="fas fa-envelope"></i> Contact</a>
+                <a href="#" id="privacyLink"><i class="fas fa-shield-alt"></i> Privacy</a>
+                <a href="#" id="termsLink"><i class="fas fa-file-alt"></i> Terms</a>
             </div>
             
             <div class="copyright">
@@ -68,9 +87,27 @@
         </div>
     </footer>
 
-    <!-- Voice Command Indicator -->
-    <div class="voice-indicator" id="voiceIndicator" title="Click for voice commands">
-        <i class="fas fa-microphone"></i>
+    <!-- Voice Command Panel -->
+    <div class="voice-panel" id="voicePanel" style="display: none;">
+        <div class="voice-panel-header">
+            <h4><i class="fas fa-microphone"></i> Voice Commands</h4>
+            <button class="btn btn-secondary btn-sm" id="closeVoicePanel">&times;</button>
+        </div>
+        <div class="voice-panel-body">
+            <p><strong>Available commands:</strong></p>
+            <ul>
+                <li>"Scan QR code" - Open QR scanner</li>
+                <li>"Generate QR" - Generate attendance QR (teachers)</li>
+                <li>"Show attendance" - View attendance</li>
+                <li>"Show marks" - View marks</li>
+                <li>"Logout" - Log out of system</li>
+                <li>"Help" - Show help</li>
+            </ul>
+            <div class="voice-status" id="voiceStatus">Click microphone to start listening</div>
+            <button class="btn" id="startVoiceBtn" style="width: 100%;">
+                <i class="fas fa-microphone"></i> Start Listening
+            </button>
+        </div>
     </div>
 
     <!-- Toast Container -->
@@ -163,6 +200,143 @@
         </div>
     </div>
 
+    <!-- Marks Upload Modal -->
+    <div class="modal" id="marksUploadModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-upload"></i> Upload Student Marks</h3>
+                <button class="modal-close" id="closeMarksUpload">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-options">
+                    <button class="btn btn-secondary" id="singleEntryBtn">
+                        <i class="fas fa-user"></i> Single Entry
+                    </button>
+                    <button class="btn btn-secondary" id="bulkUploadBtn">
+                        <i class="fas fa-users"></i> Bulk Upload (CSV)
+                    </button>
+                </div>
+                
+                <!-- Single Entry Form -->
+                <form id="singleMarksForm" style="display: block; margin-top: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">Student ID</label>
+                        <div class="input-with-search" style="position: relative;">
+                            <input type="text" class="form-control" id="studentId" placeholder="Enter Student ID">
+                            <button type="button" class="btn btn-secondary" id="searchStudentBtn" style="position: absolute; right: 0; top: 0; height: 100%; border-radius: 0 var(--radius) var(--radius) 0;">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <div id="studentInfo" style="display: none; margin-top: 0.5rem; padding: 0.5rem; background: var(--gray-100); border-radius: var(--radius);">
+                            <strong id="studentName"></strong>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Subject</label>
+                        <select class="form-control" id="marksSubject">
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Programming">Programming</option>
+                            <option value="Database">Database</option>
+                            <option value="English">English</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Marks</label>
+                            <input type="number" class="form-control" id="marksValue" min="0" max="100" placeholder="0-100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Max Marks</label>
+                            <input type="number" class="form-control" id="maxMarks" value="100" min="1" max="200">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Assessment Type</label>
+                        <select class="form-control" id="assessmentType">
+                            <option value="Assignment">Assignment</option>
+                            <option value="Quiz">Quiz</option>
+                            <option value="Midterm">Midterm</option>
+                            <option value="Final">Final Exam</option>
+                            <option value="Project">Project</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="date" class="form-control" id="marksDate" value="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    
+                    <button type="submit" class="btn" style="width: 100%;">
+                        <i class="fas fa-save"></i> Save Marks
+                    </button>
+                </form>
+                
+                <!-- Bulk Upload Form -->
+                <div id="bulkUploadForm" style="display: none; margin-top: 1.5rem;">
+                    <div class="upload-area" id="csvDropZone">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                        <p><strong>Upload CSV File</strong></p>
+                        <p style="color: var(--gray-500); font-size: 0.875rem;">
+                            Drag & drop CSV file or click to browse
+                        </p>
+                        <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+                        <button class="btn btn-secondary" id="browseCsvBtn">
+                            <i class="fas fa-folder-open"></i> Browse Files
+                        </button>
+                    </div>
+                    
+                    <div class="csv-instructions" style="margin-top: 1.5rem; padding: 1rem; background: var(--gray-100); border-radius: var(--radius);">
+                        <h4>CSV Format Instructions:</h4>
+                        <p>Your CSV file should have the following columns:</p>
+                        <ul style="font-family: monospace; font-size: 0.9rem;">
+                            <li>studentId (e.g., S1001)</li>
+                            <li>subject (e.g., Mathematics)</li>
+                            <li>marks (0-100)</li>
+                            <li>maxMarks (default: 100)</li>
+                            <li>assessmentType (Assignment, Quiz, etc.)</li>
+                            <li>date (YYYY-MM-DD)</li>
+                        </ul>
+                        <p><a href="#" id="downloadTemplate">Download template CSV</a></p>
+                    </div>
+                    
+                    <div id="csvPreview" style="display: none; margin-top: 1.5rem; max-height: 200px; overflow-y: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Subject</th>
+                                    <th>Marks</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody id="csvPreviewBody">
+                                <!-- CSV data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <button class="btn" id="processCsvBtn" style="width: 100%; margin-top: 1rem; display: none;">
+                        <i class="fas fa-check"></i> Process CSV File
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Scanner Modal (Will be inserted dynamically) -->
+    <!-- QR Generator Modal (Will be inserted dynamically) -->
+    <!-- Manual QR Input Modal (Will be inserted dynamically) -->
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/dist/html5-qrcode.min.js"></script>
+
     <!-- JavaScript Files -->
     <script src="data-manager.js"></script>
     <script src="auth.js"></script>
@@ -170,5 +344,46 @@
     <script src="qr-scanner.js"></script>
     <script src="voice-commands.js"></script>
     <script src="main.js"></script>
+
+    <script>
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loader after a short delay
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                if (loader) loader.style.display = 'none';
+                
+                // Initialize AppState if not exists
+                if (typeof AppState === 'undefined') {
+                    window.AppState = {
+                        currentUser: null,
+                        isLoggedIn: false,
+                        theme: localStorage.getItem('theme') || 'light'
+                    };
+                }
+                
+                // Apply saved theme
+                if (AppState.theme === 'dark') {
+                    document.body.classList.add('dark-theme');
+                    const themeIcon = document.querySelector('#themeToggle i');
+                    if (themeIcon) themeIcon.className = 'fas fa-sun';
+                }
+                
+                // Show auth modal if not logged in
+                if (!AppState.currentUser) {
+                    const authModal = document.getElementById('authModal');
+                    if (authModal) {
+                        authModal.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    }
+                } else {
+                    // User is logged in, load dashboard
+                    if (typeof loadDashboard === 'function') {
+                        loadDashboard();
+                    }
+                }
+            }, 1000);
+        });
+    </script>
 </body>
 </html>
